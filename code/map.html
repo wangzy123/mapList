@@ -1,0 +1,108 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>
+        Highlight City When User Hover On The List
+    </title>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.24/"></script>
+
+    <style>
+        html,
+        body {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        #app {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        #viewDiv {
+            position: absolute;
+            right: 0;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1;
+        }
+
+        #list-side {
+
+            padding: 2px;
+            box-sizing: border-box;
+            width: 300px;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            right: 0;
+            color: #fff;
+            background-color: rgba(0, 0, 0, 0.6);
+
+            z-index: 2;
+        }
+
+        #list-side h3 {
+            padding: 0 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        #listCon {
+            height: calc(100% - 64px);
+            overflow: auto;
+        }
+
+        #listCon ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            /* display: flex;
+            flex-direction:column; */
+        }
+
+        #listCon li {
+            list-style: none;
+            padding: 10px 20px;
+            text-align: center;
+        }
+
+        .list-result {
+            cursor: pointer;
+            margin: 2px 0;
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .list-result:hover,
+        .list-result:focus {
+            color: rgb(0, 255, 191);
+            background-color: rgba(0, 0, 0, 0.75);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div id="viewDiv"></div>
+        <div id="list-side">
+            <h3>Cities List</h3>
+            <div id="listCon">
+                <ul id="city_graphics">
+                    <li>Loading&hellip;</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+    <script src="js/cityList.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
