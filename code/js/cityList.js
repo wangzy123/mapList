@@ -8,6 +8,7 @@ class CityList {
         this.scrollPager = 0
         this.totalCount = 0
         this.pageSize = pageSize
+        this.curScrollTop = 0
         this.view = view
         this.container = container
         this.layer = layer
@@ -17,48 +18,57 @@ class CityList {
         this.canRequest = true
     }
 
-    async render () {
+    async render() {
 
         // set container Height--30*itemHeight
         let containerHeight = this.getItemAndContainerHeight().container
         this.container.style.height = containerHeight + "px"
 
-        // get number of all features from the service
-        this.totalCount = await this.layer.queryFeatureCount();
 
-        // get the instance of the layerview representing the counties feature layer
+        // get the instance of the layerview representing the cities feature layer
         this.layerView = await this.view.whenLayerView(this.layer);
-        if (this.canRequest) {
-            this.queryFeaturesAndRenderList()
-        }
-        const outerContainer = this.container.parentNode
+        // if (this.canRequest) {
+        //     this.queryFeaturesAndRenderList()
+        // }
 
-        // let itemHeight = this.getItemAndContainerHeight().item
-        // outerContainer.scrollTop = itemHeight
-        this.container.parentNode.addEventListener("scroll", this.scrollCallback.bind(this))
+        // this.container.parentNode.addEventListener("scroll", this.scrollCallback.bind(this))
+        this.layerView.watch("updating", val => {
+
+            if (!val) {
+                this.graphics = []
+                this.viewData = []
+                this.curPager = 0
+                this.scrollPager = 0
+                this.totalCount = 0
+                if (this.canRequest) {
+                    this.queryFeaturesAndRenderList()
+                }
+            }
+        })
     }
 
     // This function is used to fetch features from a specified start location then render the list
     // It is called when the application loads first then it is called when user scroll list
-    async queryFeaturesAndRenderList () {
-
+    async queryFeaturesAndRenderList() {
+        const query = {
+            start: this.curPager * this.pageSize,
+            num: this.pageSize,
+            geometry: this.view.extent,
+            outFields: ["*"],
+            returnGeometry: true,
+            orderByFields: ["objectid"]
+        };
+        this.totalCount = await this.layerView.queryFeatureCount();
+        console.log("uu", this.totalCount)
         this.canRequest = false
 
         // if the count of graphics less than the totalCount, query features.
         // order the results by objectid
-        if (this.graphics.length < this.totalCount) {
-            const query = {
-                start: this.curPager * this.pageSize,
-                num: this.pageSize,
-                // geometry: this.view.extent,
-                outFields: ["*"],
-                returnGeometry: true,
-                orderByFields: ["objectid"]
-            };
+        if (this.curPager == 0 || this.graphics.length < this.totalCount) {
 
-            let featureSet = await this.layer.queryFeatures(query)
+            let featureSet = await this.layerView.queryFeatures(query)
             let featureArr = featureSet.features
-
+            console.log(featureSet)
             featureArr.forEach(element => {
                 //add a field to restore the item belongs to which page
                 element["list_pager"] = this.curPager
@@ -76,11 +86,11 @@ class CityList {
 
     //calculate the height
 
-    getItemAndContainerHeight () {
+    getItemAndContainerHeight() {
         let outerHeight = this.container.parentNode.clientHeight
         let perHeight = Math.floor(outerHeight / 10)
         let containerHeight = this.dataMaxSize * perHeight
-        let itemHeight = perHeight - 24
+        let itemHeight = perHeight - 22
 
         return { item: itemHeight, container: containerHeight }
     }
@@ -88,7 +98,7 @@ class CityList {
 
     // this function runs when user hover on the list
 
-    onListHoverHandler (event) {
+    onListHoverHandler(event) {
 
         const target = event.target;
         const resultId = target.getAttribute("value");
@@ -105,46 +115,49 @@ class CityList {
             this.view.center = result.geometry
         }
     }
-    scrollCallback () {
+    scrollCallback() {
 
         const outerContainer = this.container.parentNode
         if (outerContainer) {
             let itemHeight = this.getItemAndContainerHeight().item
             let scrollTop = outerContainer.scrollTop || document.documentElement.scrollTop
             let dataLength = this.viewData.length
-            let reqHeight = (dataLength - 1) * itemHeight
+            let reqHeight = itemHeight
             let maxScrollHeight = (this.dataMaxSize - 5) * itemHeight
+            let dir = scrollTop - this.curScrollTop
             //scroll up
-            if (scrollTop <= 0) {
+            if (dir <= 0) {
                 this.scrollPager = dataLength > 0 ? this.viewData[0]["list_pager"] - 1 : 0
                 this.scrollPager = this.scrollPager >= 0 ? this.scrollPager : 0
                 if (this.canRequest) {
                     this.queryFeaturesAndRenderList()
                 }
                 // to makesure the outerContainer can scroll
-                if (this.viewData[0]["list_pager"] != 0) {
-                    outerContainer.scrollTop = itemHeight
+                if (this.viewData[0]["list_pager"] != 0 && scrollTop == 0) {
+                    outerContainer.scrollTop = "10px"
                 }
             } else {
                 if (scrollTop >= reqHeight || scrollTop >= maxScrollHeight) {
                     this.scrollPager = dataLength > 0 ? this.viewData[dataLength - 1]["list_pager"] - 1 : 0
+                    this.scrollPager = this.scrollPager >= 0 ? this.scrollPager : 0
                     if (this.canRequest) {
 
                         this.queryFeaturesAndRenderList()
                     }
                     let maxPage = Math.ceil(this.totalCount / this.pageSize)
                     // to makesure the outerContainer can scroll
-                    if (this.viewData[dataLength - 1]["list_pager"] < maxPage) {
-                        outerContainer.scrollTop = 9 * itemHeight
+                    if (this.viewData[dataLength - 1]["list_pager"] < maxPage && scrollTop >= maxScrollHeight) {
+                        outerContainer.scrollTop = (outerContainer.scrollTop - 10) + "px"
                     }
 
                 }
             }
-
+            this.curScrollTop = scrollTop
+            console.log(scrollTop, this.scrollPager)
 
         }
     }
-    renderList () {
+    renderList() {
         const innerContainer = this.container
         const itemHeight = this.getItemAndContainerHeight().item
         //get the data which will be rendered to the list
@@ -176,5 +189,17 @@ class CityList {
         innerContainer.innerHTML = "";
         innerContainer.appendChild(fragment);
 
+    }
+
+    throttle(event, time) {
+        let timer = null
+        return _ => {
+            if (!timer) {
+                timer = setTimeout(_ => {
+                    event()
+                    timer = null
+                }, time)
+            }
+        }
     }
 }

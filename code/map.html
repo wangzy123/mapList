@@ -49,14 +49,16 @@
             z-index: 2;
         }
 
-        #list-side h3 {
-            padding: 0 20px;
-            margin: 20px 0;
+        #list-side #head-txt {
+            
+            height:60px;
+            font-size:30px;
+            line-height:60px;
             text-align: center;
         }
 
         #listCon {
-            height: calc(100% - 64px);
+            height: calc(100% - 60px);
             overflow: auto;
         }
 
@@ -92,7 +94,7 @@
     <div id="app">
         <div id="viewDiv"></div>
         <div id="list-side">
-            <h3>Cities List</h3>
+            <div id="head-txt">Cities List</div>
             <div id="listCon">
                 <ul id="city_graphics">
                     <li>Loading&hellip;</li>
