@@ -139,9 +139,9 @@ class CityList {
             let clientHeight = outerContainer.clientHeight
             let scrollHeight = outerContainer.scrollHeight
             let dataLength = this.viewData.length
-            let reqHeight = (dataLength - 1) * itemHeight
-            let maxScrollHeight = this.dataMaxSize * itemHeight
-            let dir = scrollTop - itemHeight
+            // let reqHeight = (dataLength - 1) * itemHeight
+            // let maxScrollHeight = this.dataMaxSize * itemHeight
+            let dir = scrollTop - 3*itemHeight
 
             //scroll up
             if (dir <= 0) {
@@ -152,7 +152,7 @@ class CityList {
                 }
                 // to makesure the outerContainer can scroll
                 if (this.viewData[0] && this.viewData[0]["list_pager"] != 0 && scrollTop == 0) {
-                    outerContainer.scrollTop = itemHeight
+                    outerContainer.scrollTop = 3*itemHeight
                 }
             } else {
                 // if (scrollTop >= reqHeight || scrollTop >= maxScrollHeight) {
@@ -166,7 +166,7 @@ class CityList {
                 // to makesure the outerContainer can scroll
 
                 if (this.viewData[dataLength - 1]["list_pager"] < maxPage && (scrollTop + clientHeight >= scrollHeight)) {
-                    outerContainer.scrollTop = itemHeight
+                    outerContainer.scrollTop = 3*itemHeight
                 }
 
                 // }
