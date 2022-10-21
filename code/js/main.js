@@ -103,6 +103,6 @@ require(["esri/Map", "esri/views/MapView", "esri/layers/MapImageLayer", "esri/la
         center: [-99, 39]
     });
     let listContainer = document.getElementById("city_graphics");
-    let citylist = new CityList(10, view, city_feature_layer, listContainer, ["objectid", "areaname", "pop2000"])
+    let citylist = new CityList(10, view, city_feature_layer, listContainer, ["objectid", "areaname", "pop2000"],reactiveUtils)
     citylist.render()
 });
